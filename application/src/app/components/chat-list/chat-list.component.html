@@ -1,0 +1,14 @@
+<h2>SignalR Chat Room</h2>
+<div>
+  <span>Name:&nbsp;</span><input [(ngModel)]="userName" style="width: 200px;"><br/>
+  <span>Message:&nbsp;</span><input (keyup)="onKey($event)" style="width: 70%;" />
+  <button id="btnSendMessage" (click)="send()">Send</button>
+</div>
+<div *ngIf="errorMessage !== null">
+  <p>{{errorMessage}}</p>
+</div>
+<div style="padding-top: 10px;">
+  <div *ngFor="let message of chatMessages">
+    <app-chat-list-item [chatMessage]="message"></app-chat-list-item>
+  </div>
+</div>
