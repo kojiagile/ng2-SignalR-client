@@ -1,1 +1,3 @@
-# ng2-SignalR-client
+# ng2-SignalR-client example app
+
+### to be continued...
