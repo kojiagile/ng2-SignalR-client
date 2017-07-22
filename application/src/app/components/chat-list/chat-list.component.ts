@@ -1,10 +1,12 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ChatMessage } from "../../models/chat-message.model";
+import { Ng2SignalRClientService, ConnectionOptions } from "../../services/ng2-signalr-client/ng2-signalr-client.service";
 
 @Component({
   selector: 'app-chat-list',
   templateUrl: './chat-list.component.html',
-  styleUrls: ['./chat-list.component.css']
+  styleUrls: ['./chat-list.component.css'],
+  providers: [Ng2SignalRClientService]
 })
 export class ChatListComponent implements OnInit {
 
@@ -12,7 +14,15 @@ export class ChatListComponent implements OnInit {
   public userName: string = '';
   public content: string = '';
   public errorMessage: string = null;
-  constructor() { }
+  
+  constructor(private signalRService: Ng2SignalRClientService) {
+    const options = new ConnectionOptions();
+    options.url = signalRService.tempurl;
+    options.hubName = signalRService.temphubName;
+    
+    this.signalRService.connect(options);
+
+  }
 
   ngOnInit() {
     this.initialise();

@@ -21,8 +21,12 @@
     "@angular/platform-browser": "^4.0.0",
     "@angular/platform-browser-dynamic": "^4.0.0",
     "@angular/router": "^4.0.0",
+    "@types/jquery": "^3.2.9",
+    "@types/signalr": "^2.2.34",
     "core-js": "^2.4.1",
+    "jquery": "^3.2.1",
     "rxjs": "^5.4.1",
+    "signalr": "^2.2.2",
     "zone.js": "^0.8.14"
   },
   "devDependencies": {
