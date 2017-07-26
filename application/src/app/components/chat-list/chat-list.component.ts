@@ -20,7 +20,12 @@ export class ChatListComponent implements OnInit {
     options.url = signalRService.tempurl;
     options.hubName = signalRService.temphubName;
     
-    this.signalRService.connect(options);
+    this.signalRService.connect(options)
+      .subscribe(data => {
+        console.log('in component');
+        console.log(data);
+        
+      })
 
   }
 
@@ -45,10 +50,15 @@ export class ChatListComponent implements OnInit {
       this.errorMessage = 'User name and message must not be empty.';
       return;
     }
+    
     console.log(this.content);
     const newMessage = new ChatMessage();
     newMessage.user = this.userName;
     newMessage.content = this.content;
+
+    this.signalRService.invoke('Chat', newMessage);
+
     this.chatMessages.push(newMessage);
+    
   }
 }

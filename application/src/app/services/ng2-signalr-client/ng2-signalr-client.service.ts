@@ -1,4 +1,7 @@
+import { ChatMessage } from '../../models/chat-message.model';
+import { Subject } from 'rxjs/Subject';
 import { Injectable } from '@angular/core';
+import { Observable } from "rxjs/Observable";
 
 declare var $: any;
 
@@ -39,13 +42,18 @@ class ConnectionTransport {
 @Injectable()
 export class Ng2SignalRClientService {
     public connectionOptions: ConnectionOptions = null;
-    public connection: any = null;
+    public connection: Observable<any> = null;
     public hubProxy: any = null;
 
     public temphubName = 'Ng2SignalRHub';
     public tempurl = 'http://ng2-signalr-backend.azurewebsites.net/';
-
-    constructor() { }
+    
+    private connection$: any = null;
+    private connectionSubject: Subject<any> = new Subject();
+    
+    constructor() {
+        this.connection = this.connectionSubject.asObservable();
+    }
 
     public connect(connectionOptions?: ConnectionOptions) {
         this.validation(connectionOptions);
@@ -53,25 +61,35 @@ export class Ng2SignalRClientService {
             this.connectionOptions = connectionOptions;
         }
 
-        this.connection = $.hubConnection(this.connectionOptions.url);
-        this.connection.start()
-            .done( () => {
+        this.connection$ = $.hubConnection(this.connectionOptions.url);
+        
+        // Get Hub proxy for later use (send data to SignalR server)
+        this.hubProxy = this.connection$.createHubProxy(this.connectionOptions.hubName);
+
+        this.connection$.start()
+            .done( (conn) => {
                 console.log('connected');
+                // console.log(conn);
+                this.connectionSubject.next(conn);
             })
             .fail( (error) => {
                 console.log(error);
+                this.connectionSubject.error(error);
             });
-        
-        // Get Hub proxy for later use (send data to SignalR server)
-        this.hubProxy = this.connection.createHubProxy(this.connectionOptions.hubName);
+            
+        return this.connection;
     }
 
     public listen() {
         // Register a method that a signalR server calls.
     }
 
-    public invoke() {
+    public invoke(invokeMethodName: string, message: ChatMessage) {
 
+        this.hubProxy.invoke(invokeMethodName, message)
+            .catch( (error) => {
+                console.log("Failed to invoke 'Chat'. Error occured. Error:" + error);
+            });
     }
 
     public disconnect() {
