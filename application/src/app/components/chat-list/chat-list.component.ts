@@ -21,10 +21,11 @@ export class ChatListComponent implements OnInit {
     options.hubName = signalRService.temphubName;
     
     this.signalRService.connect(options)
-      .subscribe(data => {
+      .subscribe(connection => {
         console.log('in component');
-        console.log(data);
-        
+        console.log(connection);
+        // signalRService.listen("OnMessageSent");
+        signalRService.listen("onMessageSent");
       })
 
   }
@@ -56,7 +57,8 @@ export class ChatListComponent implements OnInit {
     newMessage.user = this.userName;
     newMessage.content = this.content;
 
-    this.signalRService.invoke('Chat', newMessage);
+    // this.signalRService.invoke('Chat', newMessage);
+    this.signalRService.invoke('Send', newMessage.user, newMessage.content);
 
     this.chatMessages.push(newMessage);
     

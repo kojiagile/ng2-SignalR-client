@@ -45,9 +45,11 @@ export class Ng2SignalRClientService {
     public connection: Observable<any> = null;
     public hubProxy: any = null;
 
-    public temphubName = 'Ng2SignalRHub';
-    public tempurl = 'http://ng2-signalr-backend.azurewebsites.net/';
-    
+    // public temphubName = 'Ng2SignalRHub';
+    // public tempurl = 'http://ng2-signalr-backend.azurewebsites.net/';
+    public temphubName = 'SignalRExampleHub';
+    public tempurl = 'http://localhost:56768'
+
     private connection$: any = null;
     private connectionSubject: Subject<any> = new Subject();
     
@@ -66,6 +68,11 @@ export class Ng2SignalRClientService {
         // Get Hub proxy for later use (send data to SignalR server)
         this.hubProxy = this.connection$.createHubProxy(this.connectionOptions.hubName);
 
+        // At least one method (any method) needs to be listened BEFORE connection starts...
+        this.hubProxy.on('dummy', (...args: any[]) => {});
+
+        
+        // return Observable.fromPromise(this.connection$.start()
         this.connection$.start()
             .done( (conn) => {
                 console.log('connected');
@@ -76,19 +83,36 @@ export class Ng2SignalRClientService {
                 console.log(error);
                 this.connectionSubject.error(error);
             });
-            
+
         return this.connection;
     }
 
-    public listen() {
+    public listen(methodName: string) {
+        console.log('listen');
+        const self = this;
         // Register a method that a signalR server calls.
+        // this.hubProxy.on(methodName, function () {
+        this.hubProxy.on(methodName, (...args: any[]) => {
+            console.log('hey');
+            // self.test(arguments);
+            self.test(args);
+        });
+    }
+    
+    public test(...args: any[]) {
+        console.log('heyhey');
+        console.log(args);
     }
 
-    public invoke(invokeMethodName: string, message: ChatMessage) {
+    // TODO: Uncomment this to replace when the service is matured.
+    public invoke(invokeMethodName: string, ...args: any[]) {
+    // public invoke(invokeMethodName: string, message: ChatMessage) {
 
-        this.hubProxy.invoke(invokeMethodName, message)
+        // this.hubProxy.invoke(invokeMethodName, message)
+        // this.hubProxy.invoke(invokeMethodName, args) // This won't work, as the parameters are string, string.
+        this.hubProxy.invoke(invokeMethodName, args[0], args[1])
             .catch( (error) => {
-                console.log("Failed to invoke 'Chat'. Error occured. Error:" + error);
+                console.log("Failed to invoke " + invokeMethodName + ". Error occured. " + error);
             });
     }
 
