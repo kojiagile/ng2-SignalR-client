@@ -1,7 +1,11 @@
 import { ChatMessage } from '../../models/chat-message.model';
 import { Subject } from 'rxjs/Subject';
 import { Injectable } from '@angular/core';
-import { Observable } from "rxjs/Observable";
+// import { Observable } from "rxjs/Observable";
+// import 'rxjs/add/observable/fromPromise';
+import { Observable } from 'rxjs/Rx';
+
+
 
 declare var $: any;
 
@@ -52,7 +56,8 @@ export class Ng2SignalRClientService {
 
     private connection$: any = null;
     private connectionSubject: Subject<any> = new Subject();
-    
+    private listnerSubject = new Subject();
+
     constructor() {
         this.connection = this.connectionSubject.asObservable();
     }
@@ -65,13 +70,13 @@ export class Ng2SignalRClientService {
 
         this.connection$ = $.hubConnection(this.connectionOptions.url);
         
-        // Get Hub proxy for later use (send data to SignalR server)
+        // TODO: Keep hub proxy in an array. One connection can have multiple hubs
+        // Get Hub proxy for later use (invoke a server method in SignalR server)
         this.hubProxy = this.connection$.createHubProxy(this.connectionOptions.hubName);
 
         // At least one method (any method) needs to be listened BEFORE connection starts...
         this.hubProxy.on('dummy', (...args: any[]) => {});
 
-        
         // return Observable.fromPromise(this.connection$.start()
         this.connection$.start()
             .done( (conn) => {
@@ -87,16 +92,39 @@ export class Ng2SignalRClientService {
         return this.connection;
     }
 
-    public listen(methodName: string) {
-        console.log('listen');
+    public listen(methodName: string, func: any) {
+    // public listen(methodName: string) {
         const self = this;
         // Register a method that a signalR server calls.
         // this.hubProxy.on(methodName, function () {
+        // this.hubProxy.on(methodName, (...args: any[]) => {
+        //     console.log('hey');
+        //     // self.test(arguments);
+        //     self.test(...args);
+        // });
+
+        // This does not work. Get an error ".then is not a function."
+        // return Observable.fromPromise<T>(
+        //         // this.hubProxy.on(methodName, (...args: any[]) => {
+        //         //     console.log('hey');
+        //         //     // self.test(arguments);
+        //         //     self.test(...args);
+        //         // }))
+        //         this.hubProxy.on(methodName, (...args: any[]) => {
+        //             this.listnerSubject.next(args);
+        //         })
+        //     )
+        //     .catch(error => {
+        //         return Observable.throw(error);
+        //     })
         this.hubProxy.on(methodName, (...args: any[]) => {
-            console.log('hey');
-            // self.test(arguments);
-            self.test(args);
-        });
+            // this.listnerSubject.next({...args});
+            func(...args);
+        })
+        // return new Observable(this.hubProxy.on(methodName, (...args: any[]) => {
+        //     return Observable.of(...args);
+        // }));
+        // return this.listnerSubject.asObservable();
     }
     
     public test(...args: any[]) {
@@ -104,15 +132,17 @@ export class Ng2SignalRClientService {
         console.log(args);
     }
 
-    // TODO: Uncomment this to replace when the service is matured.
-    public invoke(invokeMethodName: string, ...args: any[]) {
-    // public invoke(invokeMethodName: string, message: ChatMessage) {
-
-        // this.hubProxy.invoke(invokeMethodName, message)
-        // this.hubProxy.invoke(invokeMethodName, args) // This won't work, as the parameters are string, string.
-        this.hubProxy.invoke(invokeMethodName, args[0], args[1])
-            .catch( (error) => {
-                console.log("Failed to invoke " + invokeMethodName + ". Error occured. " + error);
+    public invoke<T>(methodName: string, ...args: any[]): Observable<T> {
+        return Observable.fromPromise<T>(
+            this.hubProxy
+                .invoke(methodName, ...args)
+                .catch( (error) => {
+                    console.log("Failed to invoke " + methodName + ". Error occured. " + error);
+                    throw error;
+                })
+            )
+            .catch(error => {
+                return Observable.throw(error);
             });
     }
 

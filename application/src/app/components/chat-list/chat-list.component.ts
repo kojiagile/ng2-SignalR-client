@@ -25,7 +25,23 @@ export class ChatListComponent implements OnInit {
         console.log('in component');
         console.log(connection);
         // signalRService.listen("OnMessageSent");
-        signalRService.listen("onMessageSent");
+        signalRService.listen("onMessageSent", (name, message) => {
+          console.log('in listen callback')
+          console.log(name, message)
+
+          const newMessage = new ChatMessage();
+          newMessage.user = name;
+          newMessage.content = message
+          // Somehow chatMessages.length - 1 appear in the page. the first received message won't appear...
+          // Updated: actually all values in the array appear but it's super slow... why is that?
+          this.chatMessages.push(newMessage);
+          console.log(this.chatMessages)
+          
+        })
+        // signalRService.listen("onMessageSent")
+        //   .subscribe(data => {
+        //     console.log(data)
+        //   });
       })
 
   }
@@ -52,15 +68,13 @@ export class ChatListComponent implements OnInit {
       return;
     }
     
-    console.log(this.content);
-    const newMessage = new ChatMessage();
-    newMessage.user = this.userName;
-    newMessage.content = this.content;
-
+    // invoke method returns Observable object 
+    // in case you want to receive a response from the method you call.
     // this.signalRService.invoke('Chat', newMessage);
-    this.signalRService.invoke('Send', newMessage.user, newMessage.content);
-
-    this.chatMessages.push(newMessage);
+    this.signalRService.invoke('Send', this.userName, this.content)
+      .subscribe(data => {
+        console.log(data);
+      })
     
   }
 }
