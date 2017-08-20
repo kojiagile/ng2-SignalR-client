@@ -92,39 +92,26 @@ export class Ng2SignalRClientService {
         return this.connection;
     }
 
-    public listen(methodName: string, func: any) {
-    // public listen(methodName: string) {
-        const self = this;
-        // Register a method that a signalR server calls.
-        // this.hubProxy.on(methodName, function () {
-        // this.hubProxy.on(methodName, (...args: any[]) => {
-        //     console.log('hey');
-        //     // self.test(arguments);
-        //     self.test(...args);
-        // });
+    // public listen(methodName: string, func: any) {
+    //     const self = this;
+    //     this.hubProxy.on(methodName, (...args: any[]) => {
+    //         func(...args);
+    //     });
+    // }
 
-        // This does not work. Get an error ".then is not a function."
-        // return Observable.fromPromise<T>(
-        //         // this.hubProxy.on(methodName, (...args: any[]) => {
-        //         //     console.log('hey');
-        //         //     // self.test(arguments);
-        //         //     self.test(...args);
-        //         // }))
-        //         this.hubProxy.on(methodName, (...args: any[]) => {
-        //             this.listnerSubject.next(args);
-        //         })
-        //     )
-        //     .catch(error => {
-        //         return Observable.throw(error);
-        //     })
-        this.hubProxy.on(methodName, (...args: any[]) => {
-            // this.listnerSubject.next({...args});
-            func(...args);
-        })
-        // return new Observable(this.hubProxy.on(methodName, (...args: any[]) => {
-        //     return Observable.of(...args);
-        // }));
-        // return this.listnerSubject.asObservable();
+    public listen(methodName: string) {
+        // Register a method that a signalR server calls.
+        // this.hubProxy.on(methodName, (...args: any[]) => {
+        this.hubProxy.on(methodName, (args: ChatMessage) => {
+            console.log('hey');
+            console.log(args);
+            // self.test(arguments);
+            // self.test(...args);
+            
+            this.listnerSubject.next(args);
+        });
+
+        return this.listnerSubject.asObservable();
     }
     
     public test(...args: any[]) {

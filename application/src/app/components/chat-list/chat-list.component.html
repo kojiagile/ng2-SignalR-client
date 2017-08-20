@@ -1,7 +1,8 @@
 <h2>SignalR Chat Room</h2>
 <div>
-  <span>Name:&nbsp;</span><input [(ngModel)]="userName" style="width: 200px;"><br/>
-  <span>Message:&nbsp;</span><input (keyup)="onKey($event)" style="width: 70%;" />
+  <span>Name:&nbsp;&nbsp;&nbsp;</span><input [(ngModel)]="userName" style="width: 200px;"><br/>
+  <span>Content:&nbsp;</span><input [(ngModel)]="content" style="width: 90%;"><br/>
+  <!-- <span>Message:&nbsp;</span><input (keyup)="onKey($event)" style="width: 70%;" /> -->
   <button id="btnSendMessage" (click)="send()">Send</button>
 </div>
 <div *ngIf="errorMessage !== null">
